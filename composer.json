@@ -8,7 +8,7 @@
     "require": {
       "php": ">=5.4.0",
       "symfony/filesystem": "~2.4",
-      "jwage/easy-csv": "~1.0@dev"
+      "league/csv": "5.*"
     },
     "license": "MIT",
     "authors": [
