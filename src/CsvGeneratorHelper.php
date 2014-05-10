@@ -2,7 +2,7 @@
 
 namespace Ctrl\Console\Helper;
 
-use EasyCSV\Writer;
+use League\Csv\Writer;
 use Symfony\Component\Console\Helper\InputAwareHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -97,9 +97,11 @@ class CsvGeneratorHelper extends InputAwareHelper
     {
         if (empty($rows)) { return; }
 
-        $csv = new Writer($filename);
-        $csv->writeRow(array_keys(current($rows)));
-        $csv->writeFromArray($rows);
+        $csv = new Writer(new \SplFileObject($filename, 'w'));
+        $csv->insertOne(array_keys(current($rows)));
+        $csv->insertAll($rows);
+
+        $csv->output();
     }
 
 }
