@@ -63,7 +63,7 @@ class CsvGeneratorHelper extends InputAwareHelper
             $filename = $this->askForFilename($output);
         }
 
-        $this->writeCsvFile($filename, $rows);
+        $this->writeCsvFile($filename, $rows, array_keys(current($rows)));
 
         return count($rows);
     }
@@ -90,18 +90,40 @@ class CsvGeneratorHelper extends InputAwareHelper
     }
 
     /**
-     * @param $filename
-     * @param $rows
+     * @param string $filename
+     * @param array|\Traversable $data
+     * @param array $headers Optional headers for the csv columns
+     * @throws \InvalidArgumentException when $data is neither array nor \Traversable
      */
-    protected function writeCsvFile($filename, array $rows = [])
+    protected function writeCsvFile($filename, $data, array $headers = [])
     {
-        if (empty($rows)) { return; }
+        $rows   = $this->normalizeData($data);
+        $csv    = new Writer(new \SplFileObject($filename, 'w'));
 
-        $csv = new Writer(new \SplFileObject($filename, 'w'));
-        $csv->insertOne(array_keys(current($rows)));
+        if (!empty($headers)) {
+            $csv->insertOne($headers);
+        }
+
         $csv->insertAll($rows);
+    }
 
-        $csv->output();
+    /**
+     * @param $data
+     * @return \ArrayIterator
+     * @throws \InvalidArgumentException
+     */
+    private function normalizeData($data)
+    {
+        if (is_array($data)) {
+            $data = new \ArrayIterator($data);
+        } elseif (!$data instanceof \Traversable) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s is neither an array nor Traversable',
+                is_object($data) ? get_class($data) : gettype($data)
+            ));
+        }
+
+        return $data;
     }
 
 }
