@@ -1,0 +1,23 @@
+{
+    "name": "ctrl/console-helpers",
+    "description": "A set of console helpers for the Symfony2 Console Component",
+    "require-dev": {
+        "symfony/console": "~2.4",
+        "symfony/filesystem": "~2.4"
+    },
+    "require": {
+      "php": ">=5.4.0",
+      "symfony/filesystem": "~2.4",
+      "jwage/easy-csv": "~1.0@dev"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Crumm",
+            "email": "mike.crumm@groundctrl.com"
+        }
+    ],
+    "autoload": {
+      "psr-4": { "\\Ctrl\\Console\\Helper\\": "src/" }
+    }
+}
