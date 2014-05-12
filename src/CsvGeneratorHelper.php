@@ -30,13 +30,14 @@ class CsvGeneratorHelper extends InputAwareHelper
     }
 
     /**
-     * @param array|\Iterator $rows
+     * @param array|\Traversable $rows
      * @param OutputInterface $output
-     * @param null $mapper
-     * @return int
+     * @param callable $mapper
+     * @param string $filename
+     * @return integer
      * @throws \RuntimeException
      */
-    public function generate($rows, OutputInterface $output, $mapper = null)
+    public function generate($rows, OutputInterface $output, $mapper = null, $filename = null)
     {
         if ($rows instanceof \Iterator) {
             $rows = iterator_to_array($rows);
@@ -50,20 +51,9 @@ class CsvGeneratorHelper extends InputAwareHelper
 
         if (is_callable($mapper)) { $rows = array_map($mapper, $rows); }
 
-        $filename = null;
-        if ($this->input instanceof InputInterface && $this->input->hasOption('to-csv')) {
-            $path   = $this->input->getOption('to-csv');
-            $dir    = dirname($path);
-            if ($this->filesystem->exists($dir)) {
-                $filename = $path;
-            }
-        }
+        $csvFile = $this->getFilename($output, $filename);
 
-        if (!$filename) {
-            $filename = $this->askForFilename($output);
-        }
-
-        $this->writeCsvFile($filename, $rows, array_keys(current($rows)));
+        $this->writeCsvFile($csvFile, $rows, array_keys(current($rows)));
 
         return count($rows);
     }
@@ -87,6 +77,38 @@ class CsvGeneratorHelper extends InputAwareHelper
 
             return $answer;
         });
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param string $default
+     * @return string
+     * @throws \RuntimeException
+     */
+    protected function getFilename(OutputInterface $output, $default = null)
+    {
+        $filename = null;
+        if ($this->input instanceof InputInterface && $this->input->hasOption('to-csv')) {
+            $path   = $this->input->getOption('to-csv');
+            $dir    = dirname($path);
+            if ($this->filesystem->exists($dir)) {
+                $filename = $path;
+            }
+        }
+
+        $isInteractive = $this->input->isInteractive();
+
+        if (!$filename && !$default && !$isInteractive) {
+            throw new \RuntimeException('The CSV filename has not been provided.');
+        } elseif (!$default && !$isInteractive) {
+            throw new \RuntimeException('The CSV filename has not been provided.');
+        } elseif (!$default) {
+            $filename = $this->askForFilename($output);
+        } else {
+            $filename = $default;
+        }
+
+        return $filename;
     }
 
     /**
